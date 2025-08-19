@@ -9,7 +9,7 @@ public_users.post("/register", (req, res) => {
     //Write your code here
     const username = req.body.username;
     const password = req.body.password;
-    
+
     if (username && password) {
         if (!isValid(username)) {
             users.push({ "username": username, "password": password });
@@ -96,20 +96,8 @@ public_users.get('/title/:title', function (req, res) {
 //  Get book review
 public_users.get('/review/:isbn', function (req, res) {
     //Write your code here
-    try {
-        const isbn = req.params.isbn;
-        const book = books[isbn];
-
-        if (book) {
-            const review = book.reviews;
-            res.json(review);
-        } else {
-            res.status(404).json({ message: "Review not found" });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error retrieving reviews" });
-    }
+    const isbn = req.params.isbn;
+    res.send(books[isbn]["reviews"])
 });
 
 module.exports.general = public_users;
