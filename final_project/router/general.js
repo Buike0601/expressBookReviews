@@ -4,7 +4,6 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
-
 public_users.post("/register", (req, res) => {
     //Write your code here
     const username = req.body.username;
@@ -27,17 +26,43 @@ public_users.get('/', function (req, res) {
     res.send(JSON.stringify(books, null, 4));
 });
 
+// Get the book list available in the shop (async)
+public_users.get("/books", function(req,res) {
+    let promise = new Promise( function(resolve,reject) {
+        resolve(res.send(JSON.stringify(books, null, 4)));
+    });
+
+    promise.then( () => console.log("Book list has been sent successfully"));
+});
+
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
     //Write your code here
     const isbn = req.params.isbn;
-    const book = Object.values(books).find(book => book.isbn === isbn);
+    const book = books[isbn];
 
     if (book) {
         res.send(JSON.stringify(book, null, 4));
     } else {
         res.status(500).json({ message: "Book not found" });
     }
+
+});
+
+// Get book details based on ISBN (async)
+public_users.get('/isbn/:isbn',function (req, res) {
+    let isbn = req.params.isbn;
+    let book = books[isbn];
+    let promise = new Promise( function(resolve, reject) {
+        if(book) {
+        resolve(res.send( JSON.stringify(book, null, 5) ));
+        }
+        else {
+        resolve(res.send("Couldn't find a book with this ISBN"));
+        }
+    });
+
+    promise.then( () => console.log("The details of the book with the requested ISBN has been sent successfully ") );
 
 });
 
@@ -69,6 +94,29 @@ public_users.get('/author/:author', function (req, res) {
 
 });
 
+// Get book details based on author (async)
+public_users.get('/author/:author',function (req, res) {
+    let promise = new Promise( function(resolve,reject) {
+        let author = req.params.author;
+        let result = {
+        "booksByAuthor": []
+        }
+        
+        let keys = Object.keys(books);
+
+        for(let key of keys) {
+          let book = books[key];
+          if(book.author == author) {
+              result['booksByAuthor'].push(book)
+          }
+        }
+        
+        resolve(res.send( JSON.stringify(result,null,5) ))
+    });
+
+    promise.then( () => console.log("The list of books with the requested Author has been sent successfully") )
+});
+
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
     //Write your code here
@@ -91,6 +139,30 @@ public_users.get('/title/:title', function (req, res) {
         console.error(error);
         res.status(500).json({ message: "Error retrieving books" });
     }
+});
+
+// Get all books based on title (async)
+public_users.get('/title/:title',function (req, res) {
+    let promise = new Promise( function(resolve,reject){
+        let title = req.params.title;
+        
+        let result = {
+          "booksByTitle": []
+        }
+        
+        let keys = Object.keys(books);
+
+        for(let key of keys) {  
+          let book = books[key]
+          if(book.title == title) {
+              result['booksByTitle'].push(book)
+          }
+        }
+
+        resolve(res.send( JSON.stringify(result,null,5) ));
+    });
+
+    promise.then( () => console.log("Books with the requested title has been sent successfully.") )
 });
 
 //  Get book review
